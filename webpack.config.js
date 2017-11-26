@@ -1,17 +1,18 @@
-const {CheckerPlugin} = require("awesome-typescript-loader");
 const path = require("path");
+const {CheckerPlugin, TsConfigPathsPlugin} = require("awesome-typescript-loader");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const HtmlPlugin = require("html-webpack-plugin");
 
 module.exports = {
-    entry: path.join(__dirname, "..", "src", "ui", "index.tsx"),
+    entry: path.join(__dirname, "src", "renderer", "index.tsx"),
     output: {
-        path: path.join(__dirname, "..", "build"),
+        path: path.join(__dirname, "build"),
         filename: "bundle.min.js",
     },
     devtool: "source-map",
     resolve: {
         extensions: [".ts", ".tsx", ".js", ".css", ".json"],
+        plugins: [new TsConfigPathsPlugin()]
     },
     module: {
         rules: [
@@ -36,15 +37,11 @@ module.exports = {
             }
         ]
     },
-    externals: {
-        "react": "React",
-        "react-dom": "ReactDOM"
-    },
     plugins: [
         new CheckerPlugin(),
         new ExtractTextPlugin("bundle.min.css"),
         new HtmlPlugin({
-            template: path.join(__dirname, "..", "static", "index.html")
+            template: path.join(__dirname, "static", "index.html")
         })
     ]
 };

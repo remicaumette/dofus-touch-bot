@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
+    "outDir": "./build/",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
@@ -8,14 +8,22 @@
     "jsx": "react",
     "baseUrl": "./src",
     "paths": {
-      "@dofus/*": ["dofus/*"]
+      "@core/*": [
+        "renderer/core/*"
+      ],
+      "@network/*": [
+        "renderer/network/*"
+      ],
+      "@protocol/*": [
+        "renderer/protocol/*"
+      ],
+      "@util/*": [
+        "renderer/util/*"
+      ]
     }
   },
   "include": [
     "./src/**/*.ts",
     "./src/**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }
