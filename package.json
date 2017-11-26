@@ -6,25 +6,33 @@
   "author": "Rémi Caumette <remicaumette@icloud.com>",
   "scripts": {
     "start": "electron src/electron",
-    "build": "",
-    "watch": "webpack --config config/webpack.development.js --display-error-details --watch"
+    "watch": "webpack --config config/webpack.development.js --display-error-details --watch",
+    "dev-server": "webpack-dev-server --config config/webpack.development.js --open",
+    "build:production": "webpack --config config/webpack.production.js --display-error-details",
+    "build:development": "webpack --config config/webpack.development.js --display-error-details"
   },
   "dependencies": {
-    "electron": "^1.7.9",
-    "vue": "^2.5.8",
-    "vue-router": "^3.0.1",
+    "@types/react": "^16.0.25",
+    "@types/react-dom": "^16.0.3",
+    "electron": "^1.8.1",
+    "fbemitter": "^2.1.1",
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "awesome-typescript-loader": "^3.4.0",
     "babel-cli": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.7",
     "extract-text-webpack-plugin": "^3.0.2",
     "html-webpack-plugin": "^2.30.1",
+    "source-map-loader": "^0.2.3",
     "style-loader": "^0.19.0",
-    "vue-loader": "^13.5.0",
-    "vue-template-compiler": "^2.5.8",
-    "webpack": "^3.8.1"
+    "typescript": "^2.6.1",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4"
   }
 }

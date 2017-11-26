@@ -1,32 +1,29 @@
-const webpack = require("webpack");
+const {CheckerPlugin} = require("awesome-typescript-loader");
 const path = require("path");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const HtmlPlugin = require("html-webpack-plugin");
 
 module.exports = {
-    entry: path.join(__dirname, "..", "src", "ui", "index.js"),
+    entry: path.join(__dirname, "..", "src", "ui", "index.tsx"),
     output: {
-        path: path.join(__dirname, "..", "dist"),
-        filename: "bundle.development.js",
+        path: path.join(__dirname, "..", "build"),
+        filename: "bundle.min.js",
     },
+    devtool: "source-map",
     resolve: {
-        extensions: [".js", ".vue", ".css"],
+        extensions: [".ts", ".tsx", ".js", ".css", ".json"],
     },
     module: {
         rules: [
             {
-                test: /\.js$/,
-                use: {
-                    loader: "babel-loader",
-                    options: {
-                        presets: ["es2015"]
-                    }
-                },
+                test: /\.tsx?$/,
+                loader: "awesome-typescript-loader",
                 exclude: /node_modules/
             },
             {
-                test: /\.vue$/,
-                use: "vue-loader",
+                enforce: "pre",
+                test: /\.js$/,
+                loader: "source-map-loader",
                 exclude: /node_modules/
             },
             {
@@ -39,8 +36,13 @@ module.exports = {
             }
         ]
     },
+    externals: {
+        "react": "React",
+        "react-dom": "ReactDOM"
+    },
     plugins: [
-        new ExtractTextPlugin("bundle.development.css"),
+        new CheckerPlugin(),
+        new ExtractTextPlugin("bundle.min.css"),
         new HtmlPlugin({
             template: path.join(__dirname, "..", "static", "index.html")
         })

@@ -1,5 +1,4 @@
-import {http, logger} from "../util";
-import Client from "../client";
+import "whatwg-fetch";
 
 class AuthManager {
     constructor(client) {
@@ -15,23 +14,27 @@ class AuthManager {
     }
 
     createApiKey(login, password) {
-        return http.doPost(this.getHaapiUrl() + "/Api/CreateApiKey", {login, password, long_life_token: false})
-            .then((resp) => JSON.parse(resp))
+        const form = new FormData();
+        form.append("login", this.username = login);
+        form.append("password", password);
+        form.append("long_life_token", false);
+
+        return fetch(this.getHaapiUrl() + "/Api/CreateApiKey", {method: "POST", body: form})
             .then((resp) => {
-                logger.debug("Api key", this.apiKey = resp);
-                if (resp.reason == "OTPTIMEFAILED") throw new Error("This account must be unlock with your phone.");
-                return this.client;
-            });
+                if (resp.status === 422) throw new Error("Invalid username or password.");
+                if (resp.status === 601) throw new Error("This account must be unlock by your phone.");
+                return resp.json();
+            })
+            .then((resp) => this.apiKey = resp.key);
     }
 
     createToken() {
-        console.log(this);
-        return http.doGet(this.getHaapiUrl() + "/Account/CreateToken?game=" + this.getHaapiId(), {apikey: this.apiKey.key})
-            .then((resp) => JSON.parse(resp))
-            .then((resp) => {
-                logger.debug("Token", this.token = resp.token);
-                return this.client;
-            });
+        const headers = new Headers();
+        headers.append("apikey", this.apiKey);
+
+        return fetch(this.getHaapiUrl() + "/Account/CreateToken?game=" + this.getHaapiId(), {headers})
+            .then((resp) => resp.json())
+            .then((resp) => this.token = resp.token);
     }
 }
 
