@@ -10,6 +10,7 @@
     "build": "webpack --display-error-details"
   },
   "dependencies": {
+    "@types/es6-promise": "0.0.33",
     "@types/react": "^16.0.25",
     "@types/react-dom": "^16.0.3",
     "electron": "^1.8.1",

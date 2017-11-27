@@ -1,36 +1,37 @@
 export enum Level {
     DEBUG = 2,
     INFO = 1,
-    ERROR = 0
+    ERROR = 0,
+    OFF = -1
 }
 
 export class Logger {
     private name: string;
     private loggingLevel: Level = Level.DEBUG;
 
+    /**
+     * @param {string} name The logger's name.
+     */
     constructor(name: string) {
         this.name = name;
     }
 
     /**
-     * The logger's name.
-     * @returns {string}
+     * @returns {string} The logger's name.
      */
     public getName(): string {
         return this.name;
     }
 
     /**
-     * The logger's print level.
-     * @returns {Level}
+     * @returns {Level} The logger's print level.
      */
     public getLoggingLevel(): Level {
         return this.loggingLevel;
     }
 
     /**
-     * Change the logger's print level.
-     * @param {Level} loggingLevel
+     * @param {Level} loggingLevel Change the logger's print level.
      */
     public setLoggingLevel(loggingLevel: Level): void {
         this.loggingLevel = loggingLevel;

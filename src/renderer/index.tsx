@@ -16,22 +16,30 @@ class Application extends React.Component<ApplicationProps, ApplicationState> {
     private game: Game;
     private loginRef: HTMLInputElement;
     private passwordRef: HTMLInputElement;
-    private saveRef: HTMLInputElement;
 
     constructor(props: any) {
         super(props);
 
         this.logger = new Logger("Application");
         this.game = new Game();
+
+        this.logger.info("✲ﾟ｡.(✿╹◡╹)ﾉ☆.｡₀:*ﾟ✲ﾟ");
+        this.logger.info("Dofus Touch Bot");
+        this.logger.info("✲ﾟ｡.(✿╹◡╹)ﾉ☆.｡₀:*ﾟ✲ﾟ");
     }
 
     login(event: any) {
         this.logger.info("Attempt to login");
         event.preventDefault();
 
-        this.game.setupGame(this.loginRef.value, this.passwordRef.value)
+        this.game.auth(this.loginRef.value, this.passwordRef.value)
             .then(() => {
-                this.logger.info("Login ok!");
+                this.logger.info("Logged");
+                this.logger.info("Switching to the realm server");
+                return this.game.getRealmConnection().connect();
+            })
+            .then(() => {
+                this.logger.info("Connected to the realm server");
             })
             .catch((error) => {
                 this.logger.error("An error occurred while login", error);
@@ -46,7 +54,6 @@ class Application extends React.Component<ApplicationProps, ApplicationState> {
                 <form onSubmit={this.login.bind(this)}>
                     <input type="text" ref={(ref) => this.loginRef = ref} placeholder="Nom de compte"/>
                     <input type="password" ref={(ref) => this.passwordRef = ref} placeholder="Mot de passe"/>
-                    <input type="checkbox" ref={(ref) => this.saveRef = ref}/>
                     <input type="submit" value="Connexion"/>
                 </form>
             </div>

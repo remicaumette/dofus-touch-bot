@@ -4,6 +4,7 @@ import {RealmConnection} from "@network/RealmConnection";
 import {GameConnection} from "@network/GameConnection";
 import {HttpClient} from "@util/HttpClient";
 import {HAAPI_GAME_ID, HAAPI_URL, PROXY_URL} from "@protocol/Constants";
+import {GameState} from "@core/GameState";
 
 export class Game extends EventEmitter {
     private logger: Logger;
@@ -11,56 +12,93 @@ export class Game extends EventEmitter {
     private sessionId: string;
     private apiKey: string;
     private token: string;
+    private state: GameState;
     private realmConnection: RealmConnection;
     private gameConnection: GameConnection;
 
     constructor() {
         super();
         this.logger = new Logger("Game");
-        this.realmConnection = new RealmConnection();
+        this.state = GameState.OFFLINE;
+        this.realmConnection = new RealmConnection(this);
         this.gameConnection = new GameConnection();
     }
 
+    /**
+     * @returns {Logger} The logger.
+     */
+    public getLogger(): Logger {
+        return this.logger;
+    }
 
     /**
-     * The login.
-     * @returns {string}
+     * @returns {string} The login.
      */
     public getLogin(): string {
         return this.login;
     }
 
     /**
-     * The session id.
-     * @returns {string}
+     * @returns {string} The session id.
      */
     public getSessionId(): string {
         return this.sessionId;
     }
 
     /**
-     * The api key.
-     * @returns {string}
+     * @returns {string} The api key.
      */
     public getApiKey(): string {
         return this.apiKey;
     }
 
     /**
-     * The token.
-     * @returns {string}
+     * @returns {string} The token.
      */
     public getToken(): string {
         return this.token;
     }
 
     /**
+     * @returns {GameState} The state.
+     */
+    public getState(): GameState {
+        return this.state;
+    }
+
+    /**
+     * Update the game state with this.
+     * @param {GameState} state The new state.
+     */
+    public setState(state: GameState): void {
+        this.logger.debug("The state will be updated", {from: this.state, to: state});
+        this.state = state;
+        this.emit("stateUpdated");
+    }
+
+    /**
+     * @returns {RealmConnection} The realm connection.
+     */
+    public getRealmConnection(): RealmConnection {
+        return this.realmConnection;
+    }
+
+    /**
+     * @returns {GameConnection} The game connection.
+     */
+    public getGameConnection(): GameConnection {
+        return this.gameConnection;
+    }
+
+    /**
      * Setup the game, fetching the config, the token and the api key.
      * @param {string} login Login.
      * @param {string} password Password.
-     * @returns {Promise<void>}
+     * @returns {Promise<void>} Result.
      */
-    public setupGame(login: string, password: string): Promise<void> {
+    public auth(login: string, password: string): Promise<void> {
+        this.logger.info("Authentication...");
+
         return HttpClient.get(`${PROXY_URL}/config.json`)
             .then((resp) => resp.json())
             .then((resp) => {
@@ -83,6 +121,9 @@ export class Game extends EventEmitter {
             .then((resp) => resp.json())
             .then((resp) => {
                 this.logger.debug("Game.token", this.token = resp.token);
+                this.logger.info("Successfully authenticated");
+
+                this.setState(GameState.AUTHENTICATED);
             });
     }
 }

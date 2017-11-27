@@ -2,7 +2,7 @@ import "whatwg-fetch";
 
 export class HttpClient {
     /**
-     * Do a request with the GET method
+     * Do a request with the GET method.
      * @param {string} url The url.
      * @param {Headers} headers Request headers (optional).
      * @returns {Promise<string>} Body of the response.
@@ -12,7 +12,7 @@ export class HttpClient {
     }
 
     /**
-     * Do a request with the GET method
+     * Do a request with the GET method.
      * @param {string} url The url.
      * @param {any} body Request body (optional).
      * @param {Headers} headers Request headers (optional).
