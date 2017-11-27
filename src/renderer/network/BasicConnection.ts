@@ -84,8 +84,6 @@ export class BasicConnection extends EventEmitter {
                 this.socket.on("error", this.onError.bind(this));
                 this.socket.on("close", this.onClose.bind(this));
                 this.socket.open();
-
-                resolve();
             } catch (error) {
                 this.logger.error(`An error occurred while trying to connect to ${uri}`, error);
                 reject(error);
