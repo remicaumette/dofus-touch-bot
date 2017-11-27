@@ -3,13 +3,15 @@ import {Logger} from "@util/Logger";
 import {RealmConnection} from "@network/RealmConnection";
 import {GameConnection} from "@network/GameConnection";
 import {HttpClient} from "@util/HttpClient";
-import {HAAPI_GAME_ID, HAAPI_URL, PROXY_URL} from "@protocol/Constants";
 import {GameState} from "@core/GameState";
+import {ProtocolConstants} from "@protocol/ProtocolConstants";
 
 export class Game extends EventEmitter {
     private logger: Logger;
     private login: string;
     private sessionId: string;
+    private appVersion: string;
+    private buildVersion: string;
     private apiKey: string;
     private token: string;
     private state: GameState;
@@ -43,6 +45,20 @@ export class Game extends EventEmitter {
      */
     public getSessionId(): string {
         return this.sessionId;
+    }
+
+    /**
+     * @returns {string} The app version.
+     */
+    public getAppVersion(): string {
+        return this.appVersion;
+    }
+
+    /**
+     * @returns {string} The build version.
+     */
+    public getBuildVersion(): string {
+        return this.buildVersion;
     }
 
     /**
@@ -99,16 +115,24 @@ export class Game extends EventEmitter {
     public auth(login: string, password: string): Promise<void> {
         this.logger.info("Authentication...");
 
-        return HttpClient.get(`${PROXY_URL}/config.json`)
+        return HttpClient.get(`${ProtocolConstants.getProxyUrl()}/config.json`)
             .then((resp) => resp.json())
             .then((resp) => {
                 this.logger.debug("Game.sessionId", this.sessionId = resp.sessionId);
+                return ProtocolConstants.getAppVersion();
+            })
+            .then((appVersion) => {
+                this.logger.debug("Game.appVersion", this.appVersion = appVersion);
+                return ProtocolConstants.getBuildVersion();
+            })
+            .then((buildVersion) => {
+                this.logger.debug("Game.buildVersion", this.buildVersion = buildVersion);
 
                 const form: FormData = new FormData();
                 form.append("login", login);
                 form.append("password", password);
                 form.append("long_life_token", "false");
-                return HttpClient.post(`${HAAPI_URL}/Api/CreateApiKey`, form);
+                return HttpClient.post(`${ProtocolConstants.getHaapiUrl()}/Api/CreateApiKey`, form);
             })
             .then((resp) => resp.json())
             .then((resp) => {
@@ -116,7 +140,7 @@ export class Game extends EventEmitter {
 
                 const headers: Headers = new Headers();
                 headers.append("apikey", this.apiKey);
-                return HttpClient.get(`${HAAPI_URL}/Account/CreateToken?game=${HAAPI_GAME_ID}`, headers);
+                return HttpClient.get(`${ProtocolConstants.getHaapiUrl()}/Account/CreateToken?game=${ProtocolConstants.getHaapiGameId()}`, headers);
             })
             .then((resp) => resp.json())
             .then((resp) => {

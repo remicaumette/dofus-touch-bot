@@ -32,15 +32,17 @@ export class BasicConnection extends EventEmitter {
     /**
      * Using for handle opening.
      */
-    protected onOpen() {
+    private onOpen(resolve: any) {
         this.logger.info("The connection is open");
+        this.emit("open");
+        resolve();
     }
 
     /**
      * Call when data received.
      * @param {Object} data Data.
      */
-    protected onData(data: any) {
+    private onData(data: any) {
         if (this.listeners(data._messageType).length == 0) {
             this.logger.debug("Unhandled data", data);
         }
@@ -52,16 +54,18 @@ export class BasicConnection extends EventEmitter {
      * Using for handle errors.
      * @param {Error} error Error.
      */
-    protected onError(error: Error) {
+    private onError(error: Error) {
         this.logger.error("An error occurred on the connection", error);
+        this.emit("error", error);
         this.close();
     }
 
     /**
      * Using for handle closing.
      */
-    protected onClose() {
+    private onClose() {
         this.logger.info("The connection is closed");
+        this.emit("close");
     }
 
     /**
@@ -75,7 +79,7 @@ export class BasicConnection extends EventEmitter {
                 this.logger.info(`Trying to connect to ${uri}`);
 
                 this.socket = new Primus(uri, {manual: true, strategy: "disconnect,timeout"});
-                this.socket.on("open", this.onOpen.bind(this));
+                this.socket.on("open", this.onOpen.bind(this, resolve));
                 this.socket.on("data", this.onData.bind(this));
                 this.socket.on("error", this.onError.bind(this));
                 this.socket.on("close", this.onClose.bind(this));

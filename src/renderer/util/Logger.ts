@@ -53,7 +53,7 @@ export class Logger {
      * @param {string} message Message.
      * @param {Object} obj Object to debug.
      */
-    public debug(message: string, obj: object): void {
+    public debug(message: string, obj: any): void {
         if (this.loggingLevel >= Level.DEBUG) {
             console.log(`%c${new Date().toUTCString()} - [DEBUG] (${this.name}) - ${message}`, "color: #3f87a6", obj);
         }
