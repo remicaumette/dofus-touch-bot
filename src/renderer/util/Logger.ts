@@ -2,7 +2,7 @@ export enum Level {
     DEBUG = 2,
     INFO = 1,
     ERROR = 0,
-    OFF = -1
+    OFF = -1,
 }
 
 export class Logger {
@@ -37,7 +37,6 @@ export class Logger {
         this.loggingLevel = loggingLevel;
     }
 
-
     /**
      * Log an informative message (Logger.loggingLevel must be >= Level.INFO).
      * @param {string} message Message.
@@ -66,7 +65,8 @@ export class Logger {
      */
     public error(message: string, error: Error): void {
         if (this.loggingLevel >= Level.ERROR) {
-            console.log(`%c${new Date().toUTCString()} - [ERROR] (${this.name}) - ${message}: ${error.message}`, "color: #EC5f67");
+            console.log(`%c${new Date().toUTCString()} - [ERROR] (${this.name}) - ${message}: ${error.message}`,
+                "color: #EC5f67");
         }
     }
 }

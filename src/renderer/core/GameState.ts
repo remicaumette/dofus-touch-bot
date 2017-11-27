@@ -3,5 +3,5 @@ export enum GameState {
     AUTHENTICATED = 1,
     SELECTING_SERVER = 2,
     SELECTING_CHARACTER = 3,
-    ONLINE = 4
+    ONLINE = 4,
 }

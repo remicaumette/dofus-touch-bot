@@ -1,10 +1,10 @@
-import {EventEmitter} from "events";
-import {Logger} from "@util/Logger";
-import {RealmConnection} from "@network/RealmConnection";
-import {GameConnection} from "@network/GameConnection";
-import {HttpClient} from "@util/HttpClient";
 import {GameState} from "@core/GameState";
+import {GameConnection} from "@network/GameConnection";
+import {RealmConnection} from "@network/RealmConnection";
 import {ProtocolConstants} from "@protocol/ProtocolConstants";
+import {HttpClient} from "@util/HttpClient";
+import {Logger} from "@util/Logger";
+import {EventEmitter} from "events";
 
 export class Game extends EventEmitter {
     private logger: Logger;
@@ -140,7 +140,9 @@ export class Game extends EventEmitter {
 
                 const headers: Headers = new Headers();
                 headers.append("apikey", this.apiKey);
-                return HttpClient.get(`${ProtocolConstants.getHaapiUrl()}/Account/CreateToken?game=${ProtocolConstants.getHaapiGameId()}`, headers);
+                return HttpClient.get(
+                    `${ProtocolConstants.getHaapiUrl()}/Account/CreateToken?game=${ProtocolConstants.getHaapiGameId()}`,
+                    headers);
             })
             .then((resp) => resp.json())
             .then((resp) => {

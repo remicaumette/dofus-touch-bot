@@ -1,7 +1,7 @@
-import {EventEmitter} from "events";
 import {Logger} from "@util/Logger";
+import {EventEmitter} from "events";
 
-const Primus = require("./primus");
+const Primus = require("./primus"); // tslint:disable-line
 
 export class BasicConnection extends EventEmitter {
     private logger: Logger;
@@ -23,49 +23,40 @@ export class BasicConnection extends EventEmitter {
     }
 
     /**
+     * Send raw data.
+     * @param {string} call Calling type.
+     * @param data Data.
+     */
+    public send(call: string, data: any) {
+        this.socket.write({call, data: data || {}});
+    }
+
+    /**
+     * Send a packet.
+     * @param {string} type Packet type.
+     * @param data Data.
+     */
+    public sendMessage(type: string, data: any) {
+        this.send("sendMessage", {type, data: data || {}});
+    }
+
+    /**
+     * Using for close the connection.
+     */
+    public close() {
+        try {
+            this.logger.info("Closing the connection");
+            this.socket.close();
+        } catch (error) {
+            this.logger.error("An error occurred while closing the connection", error);
+        }
+    }
+
+    /**
      * @returns {any} The socket.
      */
     protected getSocket(): any {
         return this.socket;
-    }
-
-    /**
-     * Using for handle opening.
-     */
-    private onOpen(resolve: any) {
-        this.logger.info("The connection is open");
-        this.emit("open");
-        resolve();
-    }
-
-    /**
-     * Call when data received.
-     * @param {Object} data Data.
-     */
-    private onData(data: any) {
-        if (this.listeners(data._messageType).length == 0) {
-            this.logger.debug("Unhandled data", data);
-        }
-
-        this.emit(data._messageType, data);
-    }
-
-    /**
-     * Using for handle errors.
-     * @param {Error} error Error.
-     */
-    private onError(error: Error) {
-        this.logger.error("An error occurred on the connection", error);
-        this.emit("error", error);
-        this.close();
-    }
-
-    /**
-     * Using for handle closing.
-     */
-    private onClose() {
-        this.logger.info("The connection is closed");
-        this.emit("close");
     }
 
     /**
@@ -92,32 +83,41 @@ export class BasicConnection extends EventEmitter {
     }
 
     /**
-     * Send raw data.
-     * @param {string} call Calling type.
-     * @param data Data.
+     * Using for handle opening.
      */
-    public send(call: string, data: any) {
-        this.socket.write({call: call, data: data || {}});
+    private onOpen(resolve: any) {
+        this.logger.info("The connection is open");
+        this.emit("open");
+        resolve();
     }
 
     /**
-     * Send a packet.
-     * @param {string} type Packet type.
-     * @param data Data.
+     * Call when data received.
+     * @param {Object} data Data.
      */
-    public sendMessage(type: string, data: any) {
-        this.send("sendMessage", {type, data: data || {}});
-    }
-
-    /**
-     * Using for close the connection.
-     */
-    public close() {
-        try {
-            this.logger.info("Closing the connection");
-            this.socket.close();
-        } catch (error) {
-            this.logger.error("An error occurred while closing the connection", error);
+    private onData(data: any) {
+        if (this.listeners(data._messageType).length === 0) {
+            this.logger.debug("Unhandled data", data);
         }
+
+        this.emit(data._messageType, data);
+    }
+
+    /**
+     * Using for handle errors.
+     * @param {Error} error Error.
+     */
+    private onError(error: Error) {
+        this.logger.error("An error occurred on the connection", error);
+        this.emit("error", error);
+        this.close();
+    }
+
+    /**
+     * Using for handle closing.
+     */
+    private onClose() {
+        this.logger.info("The connection is closed");
+        this.emit("close");
     }
 }

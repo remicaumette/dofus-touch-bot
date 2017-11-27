@@ -12,5 +12,5 @@ export enum Channel {
     ARENA = 13,
     PRIVATE = 9,
     INFO = 10,
-    FIGHT = 11
+    FIGHT = 11,
 }

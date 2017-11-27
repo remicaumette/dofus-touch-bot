@@ -1,6 +1,6 @@
-import {BasicConnection} from "@network/BasicConnection";
 import {Game} from "@core/Game";
 import {GameState} from "@core/GameState";
+import {BasicConnection} from "@network/BasicConnection";
 import {ProtocolConstants} from "@protocol/ProtocolConstants";
 
 export class RealmConnection extends BasicConnection {
@@ -37,7 +37,7 @@ export class RealmConnection extends BasicConnection {
                     buildVersion: this.game.getBuildVersion(),
                     client: "ios",
                     language: "fr",
-                    server: "login"
+                    server: "login",
                 });
             });
     }

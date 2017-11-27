@@ -7,6 +7,8 @@
   "scripts": {
     "start": "electron src/electron",
     "watch": "webpack --display-error-details --watch",
+    "lint:check": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint:fix": "tslint -c tslint.json 'src/**/*.ts' --fix",
     "build": "webpack --display-error-details"
   },
   "dependencies": {
@@ -25,6 +27,7 @@
     "html-webpack-plugin": "^2.30.1",
     "source-map-loader": "^0.2.3",
     "style-loader": "^0.19.0",
+    "tslint": "^5.8.0",
     "typescript": "^2.6.1",
     "webpack": "^3.8.1"
   }
