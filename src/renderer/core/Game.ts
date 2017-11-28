@@ -17,6 +17,11 @@ export class Game extends EventEmitter {
     private state: GameState;
     private realmConnection: RealmConnection;
     private gameConnection: GameConnection;
+    private key: number[][];
+    private salt: string;
+    private id: number;
+    private nickname: string;
+    private secretAsk: string;
 
     constructor() {
         super();
@@ -107,6 +112,81 @@ export class Game extends EventEmitter {
     }
 
     /**
+     * @returns {number[][]} The key used for the authentication.
+     */
+    public getKey(): number[][] {
+        return this.key;
+    }
+
+    /**
+     * Set the key used for the authentication.
+     * @param {number[][]} key The key used for the authentication.
+     */
+    public setKey(key: number[][]): void {
+        this.key = key;
+    }
+
+    /**
+     * @returns {string} The salt used for the authentication.
+     */
+    public getSalt(): string {
+        return this.salt;
+    }
+
+    /**
+     * Set the salt used for the authentication.
+     * @param {string} salt The salt used for the authentication.
+     */
+    public setSalt(salt: string): void {
+        this.salt = salt;
+    }
+
+    /**
+     * @returns {number} The account id.
+     */
+    public getId(): number {
+        return this.id;
+    }
+
+    /**
+     * Set the account id.
+     * @param {number} id The account id.
+     */
+    public setId(id: number): void {
+        this.id = id;
+    }
+
+    /**
+     * @returns {string} The account nickname.
+     */
+    public getNickname(): string {
+        return this.nickname;
+    }
+
+    /**
+     * Set the account nickname.
+     * @param {string} nickname The account nickname.
+     */
+    public setNickname(nickname: string): void {
+        this.nickname = nickname;
+    }
+
+    /**
+     * @returns {string} The secret ask used for delete a character.
+     */
+    public getSecretAsk(): string {
+        return this.secretAsk;
+    }
+
+    /**
+     * Set the secret ask used for delete a character.
+     * @param {string} secretAsk The secret ask used for delete a character.
+     */
+    public setSecretAsk(secretAsk: string): void {
+        this.secretAsk = secretAsk;
+    }
+
+    /**
      * Setup the game, fetching the config, the token and the api key.
      * @param {string} login Login.
      * @param {string} password Password.
@@ -147,6 +227,7 @@ export class Game extends EventEmitter {
             .then((resp) => resp.json())
             .then((resp) => {
                 this.logger.debug("Game.token", this.token = resp.token);
+                this.logger.debug("Game.login", this.login = login);
                 this.logger.info("Successfully authenticated");
 
                 this.setState(GameState.AUTHENTICATED);

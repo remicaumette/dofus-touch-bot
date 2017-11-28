@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "dofustouch",
+  "name": "dofus-touch-bot",
   "version": "1.0.0",
   "description": "A Dofus Touch bot.",
   "author": "Rémi Caumette <remicaumette@icloud.com>",

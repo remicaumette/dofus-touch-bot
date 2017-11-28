@@ -4,7 +4,7 @@ import {EventEmitter} from "events";
 const Primus = require("./primus"); // tslint:disable-line
 
 export class BasicConnection extends EventEmitter {
-    private logger: Logger;
+    protected logger: Logger;
     private socket: any;
 
     /**
@@ -27,7 +27,7 @@ export class BasicConnection extends EventEmitter {
      * @param {string} call Calling type.
      * @param data Data.
      */
-    public send(call: string, data: any) {
+    public send(call: string, data?: any) {
         this.socket.write({call, data: data || {}});
     }
 
@@ -36,7 +36,7 @@ export class BasicConnection extends EventEmitter {
      * @param {string} type Packet type.
      * @param data Data.
      */
-    public sendMessage(type: string, data: any) {
+    public sendMessage(type: string, data?: any) {
         this.send("sendMessage", {type, data: data || {}});
     }
 
@@ -50,13 +50,6 @@ export class BasicConnection extends EventEmitter {
         } catch (error) {
             this.logger.error("An error occurred while closing the connection", error);
         }
-    }
-
-    /**
-     * @returns {any} The socket.
-     */
-    protected getSocket(): any {
-        return this.socket;
     }
 
     /**

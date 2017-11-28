@@ -52,7 +52,7 @@ export class Logger {
      * @param {string} message Message.
      * @param {Object} obj Object to debug.
      */
-    public debug(message: string, obj: any): void {
+    public debug(message: string, obj?: any): void {
         if (this.loggingLevel >= Level.DEBUG) {
             console.log(`%c${new Date().toUTCString()} - [DEBUG] (${this.name}) - ${message}`, "color: #3f87a6", obj);
         }
@@ -63,10 +63,10 @@ export class Logger {
      * @param {string} message Message.
      * @param {Error} error Error.
      */
-    public error(message: string, error: Error): void {
+    public error(message: string, error?: Error): void {
         if (this.loggingLevel >= Level.ERROR) {
-            console.log(`%c${new Date().toUTCString()} - [ERROR] (${this.name}) - ${message}: ${error.message}`,
-                "color: #EC5f67");
+            console.log(`%c${new Date().toUTCString()} - [ERROR] (${this.name}) - ${message}${error ? ": " +
+                error.message : ""}`, "color: #EC5f67");
         }
     }
 }
