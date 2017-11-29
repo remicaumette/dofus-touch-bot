@@ -2,11 +2,13 @@ import {Game} from "@core/Game";
 import {GameState} from "@core/GameState";
 import {BasicConnection} from "@network/BasicConnection";
 import {ProtocolConstants} from "@protocol/ProtocolConstants";
-import {Server} from "@protocol/type/Server";
+import {SelectedServer} from "@protocol/type/SelectedServer";
+import {ServerInformations} from "@protocol/type/ServerInformations";
 
 export class RealmConnection extends BasicConnection {
     private game: Game;
-    private servers: Server[];
+    private servers: ServerInformations[];
+    private selectedServer: SelectedServer;
 
     /**
      * @param {Game} game The game.
@@ -31,6 +33,30 @@ export class RealmConnection extends BasicConnection {
         this.on("LoginQueueStatusMessage", this.onLoginQueueStatusMessage.bind(this));
         this.on("IdentificationSuccessMessage", this.onIdentificationSuccessMessage.bind(this));
         this.on("ServersListMessage", this.onServersListMessage.bind(this));
+        this.on("SelectedServerDataMessage", this.onSelectedServerDataMessage.bind(this));
+    }
+
+    /**
+     * @returns {ServerInformations[]} Available servers.
+     */
+    public getServers(): ServerInformations[] {
+        return this.servers;
+    }
+
+    /**
+     * @returns {SelectedServer} The selected server.
+     */
+    public getSelectedServer(): SelectedServer {
+        return this.selectedServer;
+    }
+
+    /**
+     * Select a server.
+     * @param {ServerInformations} server The selected server.
+     */
+    public selectServer(server: ServerInformations) {
+        this.logger.info(`Selecting ${server.getName()}`);
+        this.sendMessage("ServerSelectionMessage", {serverId: server.getId()});
     }
 
     /**
@@ -104,7 +130,17 @@ export class RealmConnection extends BasicConnection {
      */
     private onServersListMessage(data: any): void {
         this.logger.debug("RealmConnection.servers", this.servers = data.servers.map((server: any) =>
-            new Server(server)));
+            new ServerInformations(server)));
         this.game.setState(GameState.SELECTING_SERVER);
+    }
+
+    /**
+     * SelectedServerDataMessage message handler.
+     * @param data Message.
+     */
+    private onSelectedServerDataMessage(data: any): void {
+        this.logger.debug("RealmConnection.selectedServer", this.selectedServer = new SelectedServer(data));
+        this.game.setState(GameState.CONNECTING_TO_GAME);
+        // @todo: switching to the game server
     }
 }

@@ -4,6 +4,7 @@ export enum GameState {
     CONNECTING = 2,
     IN_QUEUE = 3,
     SELECTING_SERVER = 4,
-    SELECTING_CHARACTER = 5,
-    ONLINE = 6,
+    CONNECTING_TO_GAME = 5,
+    SELECTING_CHARACTER = 6,
+    ONLINE = 7,
 }

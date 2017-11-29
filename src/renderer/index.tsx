@@ -2,6 +2,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {Game} from "@core/Game";
 import {Logger} from "@util/Logger";
+import {GameState} from "@core/GameState";
+import {ServerStatus} from "@protocol/type/ServerStatus";
 
 import "./index.css";
 
@@ -19,6 +21,7 @@ class Application extends React.Component<ApplicationProps, {}> {
     refs: {
         login: HTMLInputElement;
         password: HTMLInputElement;
+        server: HTMLInputElement;
     };
 
     constructor(props: ApplicationProps) {
@@ -27,9 +30,11 @@ class Application extends React.Component<ApplicationProps, {}> {
         this.props.logger.info("✲ﾟ｡.(✿╹◡╹)ﾉ☆.｡₀:*ﾟ✲ﾟ");
         this.props.logger.info("Dofus Touch Bot");
         this.props.logger.info("✲ﾟ｡.(✿╹◡╹)ﾉ☆.｡₀:*ﾟ✲ﾟ");
+
+        this.props.game.on("stateUpdated", () => this.forceUpdate());
     }
 
-    login(event: any) {
+    auth(event: any) {
         this.props.logger.info("Attempt to login");
         event.preventDefault();
 
@@ -39,35 +44,108 @@ class Application extends React.Component<ApplicationProps, {}> {
         };
 
         this.props.game.auth(account.login, account.password)
-            .then(() => {
-                this.props.logger.info("Logged");
-
-                localStorage.setItem("lastAccount", JSON.stringify(account));
-
-                this.props.logger.info("Switching to the realm server");
-                return this.props.game.getRealmConnection().connect();
-            })
-            .then(() => {
-                this.props.logger.info("Connected to the realm server");
-            })
             .catch((error) => {
                 this.props.logger.error("An error occurred while login", error);
             });
+    }
+
+    connectToRealm() {
+        this.props.logger.info("Attempt to connect to the realm");
+        event.preventDefault();
+
+        this.props.game.getRealmConnection().connect()
+            .catch((error) => {
+                this.props.logger.error("An error occurred while connecting to realm", error);
+            });
+    }
+
+    selectServer(event: any) {
+        event.preventDefault();
+        const server = this.props.game.getRealmConnection().getServers()[Number(this.refs.server.value)];
+        this.props.game.getRealmConnection().selectServer(server);
+    }
+
+    renderForGameState() {
+        switch (this.props.game.getState()) {
+            case GameState.OFFLINE:
+                return (
+                    <form onSubmit={this.auth.bind(this)}>
+                        <input type="text" ref="login" placeholder="Nom de compte"
+                               defaultValue={Application.getLastAccount().login}/>
+                        <input type="password" ref="password" placeholder="Mot de passe"
+                               defaultValue={Application.getLastAccount().password}/>
+
+                        <input type="submit" value="Connexion"/>
+                    </form>
+                );
+            case GameState.AUTHENTICATED:
+                return (
+                    <button onClick={this.connectToRealm.bind(this)}>
+                        Se connecter au serveur
+                    </button>
+                );
+            case GameState.CONNECTING:
+                return (
+                    <p>
+                        Connexion...
+                    </p>
+                );
+            case GameState.IN_QUEUE:
+                return (
+                    <p>
+                        Vous êtes dans la file d'attente...
+                    </p>
+                );
+            case GameState.SELECTING_SERVER:
+                return (
+                    <form onSubmit={this.selectServer.bind(this)}>
+                        <select ref="server">
+                            {this.props.game.getRealmConnection().getServers()
+                                .filter((server) => server.getStatus() === ServerStatus.ONLINE && server.isSelectable())
+                                .map((server, index) => (
+                                    <option value={index} key={server.getId()}>
+                                        {server.getName()}
+                                    </option>
+                                ))}
+                        </select>
+                        <input type="submit" value="Valider"/>
+                    </form>
+                );
+            case GameState.CONNECTING_TO_GAME:
+                return (
+                    <p>
+                        Connexion au serveur de jeu...
+                    </p>
+                );
+            case GameState.SELECTING_CHARACTER:
+                return (
+                    <form onSubmit={this.selectServer.bind(this)}>
+                        <select ref="server">
+                            {this.props.game.getRealmConnection().getServers()
+                                .filter((server) => server.getStatus() === ServerStatus.ONLINE && server.isSelectable())
+                                .map((server, index) => (
+                                    <option value={index} key={server.getId()}>
+                                        {server.getName()}
+                                    </option>
+                                ))}
+                        </select>
+                        <input type="submit" value="Valider"/>
+                    </form>
+                );
+            case GameState.ONLINE:
+                return (
+                    <p>
+                        Connecté !
+                    </p>
+                );
+        }
     }
 
     render() {
         return (
             <div>
                 <h1>Dofus Touch Bot</h1>
-
-                <form onSubmit={this.login.bind(this)}>
-                    <input type="text" ref="login" placeholder="Nom de compte"
-                           defaultValue={Application.getLastAccount().login}/>
-                    <input type="password" ref="password" placeholder="Mot de passe"
-                           defaultValue={Application.getLastAccount().password}/>
-
-                    <input type="submit" value="Connexion"/>
-                </form>
+                {this.renderForGameState()}
             </div>
         );
     }

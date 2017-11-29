@@ -1,6 +1,6 @@
 import {ServerStatus} from "@protocol/type/ServerStatus";
 
-export class Server {
+export class ServerInformations {
     private id: number;
     private name: string;
     private charactersCount: number;
