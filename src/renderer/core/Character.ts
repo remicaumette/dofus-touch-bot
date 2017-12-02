@@ -1,32 +1,49 @@
+import {CharacterChatManager} from "@core/CharacterChatManager";
+import {CharacterFightManager} from "@core/CharacterFightManager";
+import {CharacterInventoryManager} from "@core/CharacterInventoryManager";
+import {CharacterMovementManager} from "@core/CharacterMovementManager";
+import {Game} from "@core/Game";
 import {Breed} from "@protocol/enum/Breed";
 import {Sex} from "@protocol/enum/Sex";
-import {EventEmitter} from "events";
 import {CharacterBaseInformations} from "@protocol/type/CharacterBaseInformations";
-import {CharacterInventory} from "@core/CharacterInventory";
-import {CharacterChat} from "@core/CharacterChat";
+import {EventEmitter} from "events";
 
 export class Character extends EventEmitter {
+    private game: Game;
     private id: number;
     private name: string;
     private level: number;
     private breed: Breed;
     private sex: Sex;
-    private inventory: CharacterInventory;
-    private chat: CharacterChat;
+    private inventoryManager: CharacterInventoryManager;
+    private chatManager: CharacterChatManager;
+    private movementManager: CharacterMovementManager;
+    private fightManager: CharacterFightManager;
 
     /**
+     * @param {Game} game The game.
      * @param {CharacterBaseInformations} informations Informations source.
      */
-    constructor(informations: CharacterBaseInformations) {
+    constructor(game: Game, informations: CharacterBaseInformations) {
         super();
 
+        this.game = game;
         this.id = informations.getId();
         this.name = informations.getName();
         this.level = informations.getLevel();
         this.breed = informations.getBreed();
         this.sex = informations.geSex();
-        this.inventory = new CharacterInventory();
-        this.chat = new CharacterChat();
+        this.inventoryManager = new CharacterInventoryManager(this);
+        this.chatManager = new CharacterChatManager(this);
+        this.movementManager = new CharacterMovementManager(this);
+        this.fightManager = new CharacterFightManager(this);
+    }
+
+    /**
+     * @returns {Game} The game.
+     */
+    public getGame(): Game {
+        return this.game;
     }
 
     /**
@@ -74,16 +91,30 @@ export class Character extends EventEmitter {
     }
 
     /**
-     * @returns {CharacterInventory} The inventory manager.
+     * @returns {CharacterInventoryManager} The inventory manager.
      */
-    public getInventory(): CharacterInventory {
-        return this.inventory;
+    public getInventoryManager(): CharacterInventoryManager {
+        return this.inventoryManager;
     }
 
     /**
-     * @returns {CharacterChat} The chat manager.
+     * @returns {CharacterChatManager} The chat manager.
      */
-    public getChat(): CharacterChat {
-        return this.chat;
+    public getChatManager(): CharacterChatManager {
+        return this.chatManager;
+    }
+
+    /**
+     * @returns {CharacterMovementManager} The movement manager.
+     */
+    public getMovementManager(): CharacterMovementManager {
+        return this.movementManager;
+    }
+
+    /**
+     * @returns {CharacterFightManager} The fight manager.
+     */
+    public getFightManager(): CharacterFightManager {
+        return this.fightManager;
     }
 }

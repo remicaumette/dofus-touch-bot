@@ -1,8 +1,9 @@
+import {Character} from "@core/Character";
 import {Game} from "@core/Game";
 import {GameState} from "@core/GameState";
 import {BasicConnection} from "@network/BasicConnection";
 import {CharacterBaseInformations} from "@protocol/type/CharacterBaseInformations";
-import {Character} from "@core/Character";
+import {ObjectItem} from "@protocol/type/ObjectItem";
 
 export class GameConnection extends BasicConnection {
     private game: Game;
@@ -26,7 +27,8 @@ export class GameConnection extends BasicConnection {
             "GuildMemberWarnOnConnectionStateMessage", "SequenceNumberRequestMessage", "SpouseStatusMessage",
             "GameRolePlayArenaUpdatePlayerInfosMessage", "CharacterCapabilitiesMessage", "AlmanachCalendarDateMessage",
             "StartupActionsListMessage", "FriendsListMessage", "IgnoredListMessage", "GameContextDestroyMessage",
-            "GameContextCreateMessage",
+            "GameContextCreateMessage", "MailStatusMessage", "QuestListMessage", "AchievementListMessage",
+            "LifePointsRegenBeginMessage", "TextInformationMessage",
         ]);
         /* We update the game state when the connection is open */
         this.on("open", () => {
@@ -56,7 +58,7 @@ export class GameConnection extends BasicConnection {
      */
     public selectCharacter(character: CharacterBaseInformations) {
         this.selectedCharacter = character;
-        this.game.setCharacter(new Character(character));
+        this.game.setCharacter(new Character(this.game, character));
         this.sendMessage("CharacterSelectionMessage", {id: character.getId()});
     }
 

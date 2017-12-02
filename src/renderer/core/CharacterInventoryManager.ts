@@ -1,11 +1,25 @@
+import {Character} from "@core/Character";
 import {ObjectItem} from "@protocol/type/ObjectItem";
 import {EventEmitter} from "events";
 
-export class Inventory extends EventEmitter {
+export class CharacterInventoryManager extends EventEmitter {
+    private character: Character;
     private kamas: number;
     private weight: number;
     private maxWeight: number;
     private objects: ObjectItem[];
+
+    /**
+     * @param {Character} character The character.
+     */
+    constructor(character: Character) {
+        super();
+        this.character = character;
+        this.character.getGame().getGameConnection()
+            .on("InventoryContentMessage", this.onInventoryContentMessage.bind(this));
+        this.character.getGame().getGameConnection()
+            .on("InventoryWeightMessage", this.onInventoryWeightMessage.bind(this));
+    }
 
     /**
      * @returns {number} The amount of kamas.
@@ -69,5 +83,23 @@ export class Inventory extends EventEmitter {
     public setObjects(objects: ObjectItem[]): void {
         this.objects = objects;
         this.emit("objectsUpdated");
+    }
+
+    /**
+     * InventoryContentMessage message handler.
+     * @param data Message.
+     */
+    private onInventoryContentMessage(data: any): void {
+        this.setObjects(data.objects.map((object: any) => new ObjectItem(object)));
+        this.setKamas(data.kamas);
+    }
+
+    /**
+     * InventoryWeightMessage message handler.
+     * @param data Message.
+     */
+    private onInventoryWeightMessage(data: any): void {
+        this.setWeight(data.weight);
+        this.setMaxWeight(data.weightMax);
     }
 }

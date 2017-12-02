@@ -173,5 +173,11 @@ class Application extends React.Component<ApplicationProps, {}> {
     }
 }
 
-ReactDOM.render(<Application game={new Game()} logger={new Logger("Application")}/>,
+declare global {
+    interface Window {
+        game: any;
+    }
+}
+
+ReactDOM.render(<Application game={window.game = new Game()} logger={new Logger("Application")}/>,
     document.getElementById("root"));

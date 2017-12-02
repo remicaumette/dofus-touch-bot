@@ -1,3 +1,4 @@
+import {Character} from "@core/Character";
 import {GameState} from "@core/GameState";
 import {GameConnection} from "@network/GameConnection";
 import {RealmConnection} from "@network/RealmConnection";
@@ -5,7 +6,6 @@ import {ProtocolConstants} from "@protocol/ProtocolConstants";
 import {HttpClient} from "@util/HttpClient";
 import {Logger} from "@util/Logger";
 import {EventEmitter} from "events";
-import {Character} from "@core/Character";
 
 export class Game extends EventEmitter {
     private logger: Logger;

@@ -10,7 +10,7 @@ export class ObjectItem {
     /**
      * @param data Raw data (normally extract from the InventoryContentMessage).
      */
-    public ObjectItem(data: any) {
+    constructor(data: any) {
         this.uniqueId = data.objectUID;
         this.generalId = data.objectGID;
         this.position = data.position;
