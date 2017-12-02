@@ -5,6 +5,7 @@ const Primus = require("./primus"); // tslint:disable-line
 
 export class BasicConnection extends EventEmitter {
     protected logger: Logger;
+    private ignoredUnhandledMessages: string[];
     private socket: any;
 
     /**
@@ -13,6 +14,7 @@ export class BasicConnection extends EventEmitter {
     constructor(loggerName: string) {
         super();
         this.logger = new Logger(loggerName);
+        this.ignoredUnhandledMessages = [];
     }
 
     /**
@@ -76,6 +78,21 @@ export class BasicConnection extends EventEmitter {
     }
 
     /**
+     * @returns {string[]} Ignored unhandled messages.
+     */
+    protected getIgnoredUnhandledMessages(): string[] {
+        return this.ignoredUnhandledMessages;
+    }
+
+    /**
+     * Set ignored unhandled messages.
+     * @param {string[]} ignoredUnhandledMessages Ignored unhandled messages.
+     */
+    protected setIgnoredUnhandledMessages(ignoredUnhandledMessages: string[]): void {
+        this.ignoredUnhandledMessages = ignoredUnhandledMessages;
+    }
+
+    /**
      * Using for handle opening.
      */
     private onOpen(resolve: any) {
@@ -89,10 +106,10 @@ export class BasicConnection extends EventEmitter {
      * @param {Object} data Data.
      */
     private onData(data: any) {
-        if (this.listeners(data._messageType).length === 0) {
-            this.logger.debug("Unhandled data", data);
+        const messageType: string = data._messageType;
+        if (this.listeners(messageType).length === 0 && this.ignoredUnhandledMessages.indexOf(messageType) === -1) {
+            this.logger.debug("Unhandled message", data);
         }
-
         this.emit(data._messageType, data);
     }
 

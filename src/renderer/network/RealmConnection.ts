@@ -9,6 +9,7 @@ export class RealmConnection extends BasicConnection {
     private game: Game;
     private servers: ServerInformations[];
     private selectedServer: SelectedServer;
+    private willDisconnected: boolean;
 
     /**
      * @param {Game} game The game.
@@ -16,15 +17,18 @@ export class RealmConnection extends BasicConnection {
     constructor(game: Game) {
         super("RealmConnection");
         this.game = game;
-
+        /* We defined unhandled messages */
+        this.setIgnoredUnhandledMessages([
+            "ProtocolRequired", "CredentialsAcknowledgementMessage",
+        ]);
         /* We update the game state when the connection is open */
         this.on("open", () => {
             this.game.setState(GameState.CONNECTING);
         });
         /* We update the game state when the connection is close */
         this.on("close", () => {
-            if (this.game.getState() < GameState.SWITCHING) {
-                this.game.setState(GameState.AUTHENTICATED);
+            if (!this.willDisconnected) {
+                this.game.setState(GameState.OFFLINE);
             }
         });
         /* Data handling */
@@ -34,6 +38,7 @@ export class RealmConnection extends BasicConnection {
         this.on("IdentificationSuccessMessage", this.onIdentificationSuccessMessage.bind(this));
         this.on("ServersListMessage", this.onServersListMessage.bind(this));
         this.on("SelectedServerDataMessage", this.onSelectedServerDataMessage.bind(this));
+        this.on("serverDisconnecting", this.onServerDisconnecting.bind(this));
     }
 
     /**
@@ -55,7 +60,6 @@ export class RealmConnection extends BasicConnection {
      * @param {ServerInformations} server The selected server.
      */
     public selectServer(server: ServerInformations) {
-        this.logger.info(`Selecting ${server.getName()}`);
         this.sendMessage("ServerSelectionMessage", {serverId: server.getId()});
     }
 
@@ -82,9 +86,7 @@ export class RealmConnection extends BasicConnection {
      */
     private onHelloConnectMessage(data: any): void {
         this.game.setKey(data.key);
-        this.logger.debug("Game.key", this.game.getKey());
         this.game.setSalt(data.salt);
-        this.logger.debug("Game.salt", this.game.getSalt());
         this.send("checkAssetsVersion");
     }
 
@@ -108,7 +110,6 @@ export class RealmConnection extends BasicConnection {
         if (this.game.getState() !== GameState.IN_QUEUE) {
             this.game.setState(GameState.IN_QUEUE);
         }
-        this.logger.info(`You're waiting (${data.position}/${data.total})`);
     }
 
     /**
@@ -117,11 +118,8 @@ export class RealmConnection extends BasicConnection {
      */
     private onIdentificationSuccessMessage(data: any): void {
         this.game.setId(data.accountId);
-        this.logger.debug("Game.id", this.game.getId());
         this.game.setNickname(data.nickname);
-        this.logger.debug("Game.nickname", this.game.getNickname());
         this.game.setSecretAsk(data.secretQuestion);
-        this.logger.debug("Game.secretAsk", this.game.getSecretAsk());
     }
 
     /**
@@ -129,8 +127,7 @@ export class RealmConnection extends BasicConnection {
      * @param data Message.
      */
     private onServersListMessage(data: any): void {
-        this.logger.debug("RealmConnection.servers", this.servers = data.servers.map((server: any) =>
-            new ServerInformations(server)));
+        this.servers = data.servers.map((server: any) => new ServerInformations(server));
         this.game.setState(GameState.SELECTING_SERVER);
     }
 
@@ -139,7 +136,14 @@ export class RealmConnection extends BasicConnection {
      * @param data Message.
      */
     private onSelectedServerDataMessage(data: any): void {
-        this.logger.debug("RealmConnection.selectedServer", this.selectedServer = new SelectedServer(data));
+        this.selectedServer = new SelectedServer(data);
         this.game.setState(GameState.SWITCHING);
+    }
+
+    /**
+     * serverDisconnecting message handler.
+     */
+    private onServerDisconnecting() {
+        this.willDisconnected = true;
     }
 }

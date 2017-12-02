@@ -13,5 +13,5 @@ export enum Breed {
     PANDAWA = 12,
     ROUBLARD = 13,
     ZOBAL = 14,
-    STEAMER = 15
+    STEAMER = 15,
 }

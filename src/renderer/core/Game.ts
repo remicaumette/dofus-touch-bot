@@ -5,6 +5,7 @@ import {ProtocolConstants} from "@protocol/ProtocolConstants";
 import {HttpClient} from "@util/HttpClient";
 import {Logger} from "@util/Logger";
 import {EventEmitter} from "events";
+import {Character} from "@core/Character";
 
 export class Game extends EventEmitter {
     private logger: Logger;
@@ -17,6 +18,7 @@ export class Game extends EventEmitter {
     private state: GameState;
     private realmConnection: RealmConnection;
     private gameConnection: GameConnection;
+    private character: Character;
     private key: number[][];
     private salt: string;
     private id: number;
@@ -92,7 +94,6 @@ export class Game extends EventEmitter {
      * @param {GameState} state The new state.
      */
     public setState(state: GameState): void {
-        this.logger.debug("The state will be updated", {from: this.state, to: state});
         this.state = state;
         this.emit("stateUpdated");
     }
@@ -109,6 +110,21 @@ export class Game extends EventEmitter {
      */
     public getGameConnection(): GameConnection {
         return this.gameConnection;
+    }
+
+    /**
+     * @returns {Character} The character.
+     */
+    public getCharacter(): Character {
+        return this.character;
+    }
+
+    /**
+     * Set the character.
+     * @param {Character} character The character.
+     */
+    public setCharacter(character: Character): void {
+        this.character = character;
     }
 
     /**
@@ -193,20 +209,18 @@ export class Game extends EventEmitter {
      * @returns {Promise<void>} Result.
      */
     public auth(login: string, password: string): Promise<void> {
-        this.logger.info("Authentication...");
-
         return HttpClient.get(`${ProtocolConstants.getProxyUrl()}/config.json`)
             .then((resp) => resp.json())
             .then((resp) => {
-                this.logger.debug("Game.sessionId", this.sessionId = resp.sessionId);
+                this.sessionId = resp.sessionId;
                 return ProtocolConstants.getAppVersion();
             })
             .then((appVersion) => {
-                this.logger.debug("Game.appVersion", this.appVersion = appVersion);
+                this.appVersion = appVersion;
                 return ProtocolConstants.getBuildVersion();
             })
             .then((buildVersion) => {
-                this.logger.debug("Game.buildVersion", this.buildVersion = buildVersion);
+                this.buildVersion = buildVersion;
 
                 const form: FormData = new FormData();
                 form.append("login", login);
@@ -216,7 +230,7 @@ export class Game extends EventEmitter {
             })
             .then((resp) => resp.json())
             .then((resp) => {
-                this.logger.debug("Game.apiKey", this.apiKey = resp.key);
+                this.apiKey = resp.key;
 
                 const headers: Headers = new Headers();
                 headers.append("apikey", this.apiKey);
@@ -226,9 +240,8 @@ export class Game extends EventEmitter {
             })
             .then((resp) => resp.json())
             .then((resp) => {
-                this.logger.debug("Game.token", this.token = resp.token);
-                this.logger.debug("Game.login", this.login = login);
-                this.logger.info("Successfully authenticated");
+                this.token = resp.token;
+                this.login = login;
 
                 this.setState(GameState.AUTHENTICATED);
             });

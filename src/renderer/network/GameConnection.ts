@@ -1,11 +1,13 @@
 import {Game} from "@core/Game";
-import {BasicConnection} from "@network/BasicConnection";
 import {GameState} from "@core/GameState";
+import {BasicConnection} from "@network/BasicConnection";
 import {CharacterBaseInformations} from "@protocol/type/CharacterBaseInformations";
+import {Character} from "@core/Character";
 
 export class GameConnection extends BasicConnection {
     private game: Game;
     private characters: CharacterBaseInformations[];
+    private selectedCharacter: CharacterBaseInformations;
 
     /**
      * @param {Game} game The game.
@@ -13,18 +15,29 @@ export class GameConnection extends BasicConnection {
     constructor(game: Game) {
         super("GameConnection");
         this.game = game;
-
+        /* We defined unhandled messages */
+        this.setIgnoredUnhandledMessages([
+            "ProtocolRequired", "BasicAckMessage", "AuthenticationTicketAcceptedMessage", "BasicTimeMessage",
+            "ServerSettingsMessage", "ServerOptionalFeaturesMessage", "ServerSessionConstantsMessage",
+            "AccountCapabilitiesMessage", "BasicNoOperationMessage", "BasicAckMessage", "QueueStatusMessage",
+            "BasicPongMessage", "NotificationListMessage", "ShortcutBarContentMessage", "EmoteListMessage",
+            "AlignmentRankUpdateMessage", "PrismsListMessage", "FriendWarnOnConnectionStateMessage",
+            "FriendWarnOnLevelGainStateMessage", "FriendGuildWarnOnAchievementCompleteStateMessage",
+            "GuildMemberWarnOnConnectionStateMessage", "SequenceNumberRequestMessage", "SpouseStatusMessage",
+            "GameRolePlayArenaUpdatePlayerInfosMessage", "CharacterCapabilitiesMessage", "AlmanachCalendarDateMessage",
+            "StartupActionsListMessage", "FriendsListMessage", "IgnoredListMessage", "GameContextDestroyMessage",
+            "GameContextCreateMessage",
+        ]);
+        /* We update the game state when the connection is open */
         this.on("open", () => {
-            this.game.setState(GameState.CONNECTING_TO_GAME);
+            this.game.setState(GameState.CONNECTING);
         });
         /* We update the game state when the connection is close */
         this.on("close", () => {
-            this.game.setState(GameState.AUTHENTICATED);
+            this.game.setState(GameState.OFFLINE);
         });
         /* Data handling */
         this.on("HelloGameMessage", this.onHelloGameMessage.bind(this));
-        this.on("QueueStatusMessage", this.onQueueStatusMessage.bind(this));
-        this.on("AuthenticationTicketAcceptedMessage", this.onAuthenticationTicketAcceptedMessage.bind(this));
         this.on("TrustStatusMessage", this.onTrustStatusMessage.bind(this));
         this.on("CharactersListMessage", this.onCharactersListMessage.bind(this));
         this.on("CharacterSelectedSuccessMessage", this.onCharacterSelectedSuccessMessage.bind(this));
@@ -42,6 +55,8 @@ export class GameConnection extends BasicConnection {
      * @param {CharacterBaseInformations} character The selected character.
      */
     public selectCharacter(character: CharacterBaseInformations) {
+        this.selectedCharacter = character;
+        this.game.setCharacter(new Character(character));
         this.sendMessage("CharacterSelectionMessage", {id: character.getId()});
     }
 
@@ -59,8 +74,8 @@ export class GameConnection extends BasicConnection {
                     client: "ios",
                     language: "fr",
                     server: {
-                        id: this.game.getRealmConnection().getSelectedServer().getId(),
                         address: this.game.getRealmConnection().getSelectedServer().getAddress(),
+                        id: this.game.getRealmConnection().getSelectedServer().getId(),
                         port: this.game.getRealmConnection().getSelectedServer().getPort(),
                     },
                 });
@@ -78,25 +93,9 @@ export class GameConnection extends BasicConnection {
     }
 
     /**
-     * QueueStatusMessage message handler.
-     * @param data Message.
-     */
-    private onQueueStatusMessage(data: any): void {
-        this.logger.info(`You're waiting (${data.position}/${data.total})`);
-    }
-
-    /**
-     * AuthenticationTicketAcceptedMessage message handler.
-     */
-    private onAuthenticationTicketAcceptedMessage(): void {
-        this.logger.info("Authenticated");
-    }
-
-    /**
      * TrustStatusMessage message handler.
      */
     private onTrustStatusMessage(): void {
-        this.logger.info("Requesting characters");
         this.sendMessage("CharactersListRequestMessage");
     }
 
@@ -105,11 +104,9 @@ export class GameConnection extends BasicConnection {
      * @param data Message.
      */
     private onCharactersListMessage(data: any): void {
-        this.logger.info("Characters received");
         this.sendMessage("BasicPingMessage", {quiet: true});
 
-        this.logger.debug("GameConnection.characters", this.characters = data.characters
-            .map((data: any) => new CharacterBaseInformations(data)));
+        this.characters = data.characters.map((character: any) => new CharacterBaseInformations(character));
         this.game.setState(GameState.SELECTING_CHARACTER);
     }
 
@@ -117,7 +114,13 @@ export class GameConnection extends BasicConnection {
      * CharacterSelectedSuccessMessage message handler.
      */
     private onCharacterSelectedSuccessMessage(): void {
-        this.logger.info("You're connected");
         this.game.setState(GameState.ONLINE);
+
+        this.sendMessage("QuestListRequestMessage");
+        this.sendMessage("FriendsGetListMessage");
+        this.sendMessage("IgnoredGetListMessage");
+        this.sendMessage("SpouseGetInformationsMessage");
+        this.sendMessage("IgnoredGetListMessage");
+        this.sendMessage("GameContextCreateRequestMessage");
     }
 }

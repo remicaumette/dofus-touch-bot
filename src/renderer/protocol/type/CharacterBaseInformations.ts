@@ -1,5 +1,5 @@
-import {Sex} from "@protocol/enum/Sex";
 import {Breed} from "@protocol/enum/Breed";
+import {Sex} from "@protocol/enum/Sex";
 
 export class CharacterBaseInformations {
     private id: number;
