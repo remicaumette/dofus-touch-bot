@@ -28,7 +28,7 @@ export class Game extends EventEmitter {
         this.logger = new Logger("Game");
         this.state = GameState.OFFLINE;
         this.realmConnection = new RealmConnection(this);
-        this.gameConnection = new GameConnection();
+        this.gameConnection = new GameConnection(this);
     }
 
     /**

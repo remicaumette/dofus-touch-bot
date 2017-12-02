@@ -23,7 +23,7 @@ export class RealmConnection extends BasicConnection {
         });
         /* We update the game state when the connection is close */
         this.on("close", () => {
-            if (this.game.getState() >= GameState.SELECTING_CHARACTER) {
+            if (this.game.getState() < GameState.SWITCHING) {
                 this.game.setState(GameState.AUTHENTICATED);
             }
         });
@@ -140,7 +140,6 @@ export class RealmConnection extends BasicConnection {
      */
     private onSelectedServerDataMessage(data: any): void {
         this.logger.debug("RealmConnection.selectedServer", this.selectedServer = new SelectedServer(data));
-        this.game.setState(GameState.CONNECTING_TO_GAME);
-        // @todo: switching to the game server
+        this.game.setState(GameState.SWITCHING);
     }
 }

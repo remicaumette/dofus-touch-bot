@@ -1,4 +1,4 @@
-import {ServerStatus} from "@protocol/type/ServerStatus";
+import {ServerStatus} from "@protocol/enum/ServerStatus";
 
 export class ServerInformations {
     private id: number;

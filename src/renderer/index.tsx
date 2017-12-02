@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import {Game} from "@core/Game";
 import {Logger} from "@util/Logger";
 import {GameState} from "@core/GameState";
-import {ServerStatus} from "@protocol/type/ServerStatus";
+import {ServerStatus} from "@protocol/enum/ServerStatus";
 
 import "./index.css";
 
@@ -22,6 +22,7 @@ class Application extends React.Component<ApplicationProps, {}> {
         login: HTMLInputElement;
         password: HTMLInputElement;
         server: HTMLInputElement;
+        character: HTMLInputElement;
     };
 
     constructor(props: ApplicationProps) {
@@ -31,7 +32,15 @@ class Application extends React.Component<ApplicationProps, {}> {
         this.props.logger.info("Dofus Touch Bot");
         this.props.logger.info("✲ﾟ｡.(✿╹◡╹)ﾉ☆.｡₀:*ﾟ✲ﾟ");
 
-        this.props.game.on("stateUpdated", () => this.forceUpdate());
+        this.props.game.on("stateUpdated", (event) => {
+            this.forceUpdate();
+            if (this.props.game.getState() == GameState.SWITCHING) {
+                this.props.game.getGameConnection().connect()
+                    .catch((error) => {
+                        this.props.logger.error("An error occurred while connecting to game", error);
+                    });
+            }
+        });
     }
 
     auth(event: any) {
@@ -61,8 +70,18 @@ class Application extends React.Component<ApplicationProps, {}> {
 
     selectServer(event: any) {
         event.preventDefault();
-        const server = this.props.game.getRealmConnection().getServers()[Number(this.refs.server.value)];
+
+        const server = this.props.game.getRealmConnection().getServers()
+            .filter(server => server.getId() === Number(this.refs.server.value)).pop();
         this.props.game.getRealmConnection().selectServer(server);
+    }
+
+    selectCharacter(event: any) {
+        event.preventDefault();
+
+        const character = this.props.game.getGameConnection().getCharacters()
+            .filter(character => character.getId() === Number(this.refs.character.value)).pop();
+        this.props.game.getGameConnection().selectCharacter(character);
     }
 
     renderForGameState() {
@@ -102,8 +121,8 @@ class Application extends React.Component<ApplicationProps, {}> {
                         <select ref="server">
                             {this.props.game.getRealmConnection().getServers()
                                 .filter((server) => server.getStatus() === ServerStatus.ONLINE && server.isSelectable())
-                                .map((server, index) => (
-                                    <option value={index} key={server.getId()}>
+                                .map((server) => (
+                                    <option value={server.getId()} key={server.getId()}>
                                         {server.getName()}
                                     </option>
                                 ))}
@@ -119,13 +138,12 @@ class Application extends React.Component<ApplicationProps, {}> {
                 );
             case GameState.SELECTING_CHARACTER:
                 return (
-                    <form onSubmit={this.selectServer.bind(this)}>
-                        <select ref="server">
-                            {this.props.game.getRealmConnection().getServers()
-                                .filter((server) => server.getStatus() === ServerStatus.ONLINE && server.isSelectable())
-                                .map((server, index) => (
-                                    <option value={index} key={server.getId()}>
-                                        {server.getName()}
+                    <form onSubmit={this.selectCharacter.bind(this)}>
+                        <select ref="character">
+                            {this.props.game.getGameConnection().getCharacters()
+                                .map((character) => (
+                                    <option value={character.getId()} key={character.getId()}>
+                                        {character.getName()} (Niveau : {character.getLevel()})
                                     </option>
                                 ))}
                         </select>

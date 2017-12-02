@@ -1,5 +1,3 @@
-import {ServerStatus} from "@protocol/type/ServerStatus";
-
 export class SelectedServer {
     private id: number;
     private address: string;
